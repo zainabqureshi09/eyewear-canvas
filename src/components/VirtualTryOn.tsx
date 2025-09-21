@@ -1,19 +1,42 @@
-import { useState } from "react";
-import { Camera } from "./Camera";
+import { useState, useRef } from "react";
+import { Camera, CameraRef } from "./Camera";
+import { ImageUpload } from "./ImageUpload";
 import { GlassesSelector } from "./GlassesSelector";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { Sparkles, Camera as CameraIcon, Download } from "lucide-react";
+import { Sparkles, Camera as CameraIcon, Download, Upload } from "lucide-react";
+import { useImageCapture } from "@/hooks/useImageCapture";
+import { useToast } from "@/hooks/use-toast";
 
 export const VirtualTryOn = () => {
   const [selectedGlasses, setSelectedGlasses] = useState<string>("aviator");
   const [isCapturing, setIsCapturing] = useState(false);
+  const [mode, setMode] = useState<'camera' | 'upload'>('camera');
+  const cameraRef = useRef<CameraRef>(null);
+  const { downloadImage } = useImageCapture();
+  const { toast } = useToast();
 
-  const handleCapture = () => {
-    setIsCapturing(true);
-    // Simulate capture delay
-    setTimeout(() => setIsCapturing(false), 1000);
+  const handleCapture = async () => {
+    if (!cameraRef.current) return;
+    
+    try {
+      setIsCapturing(true);
+      const capturedImage = await cameraRef.current.captureImage();
+      downloadImage(capturedImage, `glasses-tryron-${Date.now()}.png`);
+    } catch (error) {
+      toast({
+        title: "Capture failed",
+        description: "Could not capture the image. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCapturing(false);
+    }
+  };
+
+  const handleSave = async () => {
+    await handleCapture();
   };
 
   return (
@@ -31,38 +54,70 @@ export const VirtualTryOn = () => {
                 <p className="text-sm text-muted-foreground">AI-Powered Glasses Fitting</p>
               </div>
             </div>
-            <Badge variant="secondary" className="bg-tech-surface border-tech-glow/20">
-              <span className="w-2 h-2 bg-tech-glow rounded-full mr-2 animate-pulse"></span>
-              Live Detection
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary" className="bg-tech-surface border-tech-glow/20">
+                <span className="w-2 h-2 bg-tech-glow rounded-full mr-2 animate-pulse"></span>
+                {mode === 'camera' ? 'Live Detection' : 'Photo Mode'}
+              </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setMode(mode === 'camera' ? 'upload' : 'camera')}
+                className="border-tech-glow/20 hover:bg-tech-glow/10"
+              >
+                {mode === 'camera' ? (
+                  <>
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload Photo
+                  </>
+                ) : (
+                  <>
+                    <CameraIcon className="w-4 h-4 mr-2" />
+                    Use Camera
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
       <div className="flex-1 flex gap-6 p-6">
-        {/* Main Camera View */}
+        {/* Main View */}
         <div className="flex-1">
-          <Card className="overflow-hidden bg-tech-surface border-tech-glow/20 shadow-[var(--shadow-elevated)]">
-            <div className="relative">
-              <Camera selectedGlasses={selectedGlasses} />
-              
-              {/* Camera Controls Overlay */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3">
-                <Button
-                  onClick={handleCapture}
-                  disabled={isCapturing}
-                  className="bg-primary hover:bg-primary/90 shadow-[var(--shadow-tech)]"
-                >
-                  <CameraIcon className="w-4 h-4 mr-2" />
-                  {isCapturing ? "Capturing..." : "Capture"}
-                </Button>
-                <Button variant="secondary" className="bg-tech-surface-hover border-border">
-                  <Download className="w-4 h-4 mr-2" />
-                  Save
-                </Button>
+          {mode === 'camera' ? (
+            <Card className="overflow-hidden bg-tech-surface border-tech-glow/20 shadow-[var(--shadow-elevated)]">
+              <div className="relative">
+                <Camera ref={cameraRef} selectedGlasses={selectedGlasses} />
+                
+                {/* Camera Controls Overlay */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3">
+                  <Button
+                    onClick={handleCapture}
+                    disabled={isCapturing}
+                    className="bg-primary hover:bg-primary/90 shadow-[var(--shadow-tech)]"
+                  >
+                    <CameraIcon className="w-4 h-4 mr-2" />
+                    {isCapturing ? "Capturing..." : "Capture"}
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    onClick={handleSave}
+                    disabled={isCapturing}
+                    className="bg-tech-surface-hover border-border"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Save
+                  </Button>
+                </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          ) : (
+            <ImageUpload 
+              selectedGlasses={selectedGlasses}
+              onBack={() => setMode('camera')}
+            />
+          )}
         </div>
 
         {/* Glasses Selector Sidebar */}
@@ -84,13 +139,13 @@ export const VirtualTryOn = () => {
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-4">
-              <span>Face Detection: Active</span>
+              <span>Face Detection: {mode === 'camera' ? 'Active' : 'Photo Analysis'}</span>
               <span>•</span>
               <span>3D Rendering: Ready</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 bg-tech-glow rounded-full animate-pulse"></span>
-              <span>Real-time tracking enabled</span>
+              <span>{mode === 'camera' ? 'Real-time tracking enabled' : 'AI-powered face analysis'}</span>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
+import { PerspectiveCamera } from "@react-three/drei";
 import { FaceDetection } from "./FaceDetection";
 import { GlassesModel } from "./GlassesModel";
 import { useFaceTracking } from "@/hooks/useFaceTracking";
@@ -11,13 +11,44 @@ interface CameraProps {
   selectedGlasses: string;
 }
 
-export const Camera = ({ selectedGlasses }: CameraProps) => {
+export interface CameraRef {
+  captureImage: () => Promise<string>;
+  getVideoElement: () => HTMLVideoElement | null;
+}
+
+export const Camera = forwardRef<CameraRef, CameraProps>(({ selectedGlasses }, ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
   const { landmarks, isDetecting } = useFaceTracking(videoRef);
+
+  useImperativeHandle(ref, () => ({
+    captureImage: async () => {
+      if (!videoRef.current) {
+        throw new Error('Video not available');
+      }
+      
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        throw new Error('Could not get canvas context');
+      }
+
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+
+      // Draw the mirrored video frame
+      ctx.scale(-1, 1);
+      ctx.drawImage(videoRef.current, -canvas.width, 0, canvas.width, canvas.height);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+      return canvas.toDataURL('image/png');
+    },
+    getVideoElement: () => videoRef.current
+  }), []);
 
   useEffect(() => {
     const initCamera = async () => {
@@ -141,4 +172,4 @@ export const Camera = ({ selectedGlasses }: CameraProps) => {
       )}
     </div>
   );
-};
+});
