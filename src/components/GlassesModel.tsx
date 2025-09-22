@@ -85,7 +85,7 @@ const AviatorGlasses = () => {
       <mesh position={[-0.15, 0, 0]}>
         <cylinderGeometry args={[0.08, 0.08, 0.005, 32]} />
         <meshStandardMaterial 
-          color="#87CEEB" 
+          color="hsl(var(--primary))" 
           transparent 
           opacity={0.3}
           metalness={0.1}
@@ -97,7 +97,7 @@ const AviatorGlasses = () => {
       <mesh position={[0.15, 0, 0]}>
         <cylinderGeometry args={[0.08, 0.08, 0.005, 32]} />
         <meshStandardMaterial 
-          color="#87CEEB" 
+          color="hsl(var(--primary))" 
           transparent 
           opacity={0.3}
           metalness={0.1}
@@ -108,14 +108,14 @@ const AviatorGlasses = () => {
       {/* Bridge */}
       <mesh position={[0, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
         <cylinderGeometry args={[0.005, 0.005, 0.04]} />
-        <meshStandardMaterial color="#C0C0C0" metalness={0.8} roughness={0.2} />
+        <meshStandardMaterial color="hsl(var(--foreground))" metalness={0.8} roughness={0.2} />
       </mesh>
       
       {/* Left frame */}
       <mesh position={[-0.15, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.082, 0.082, 0.008, 32]} />
         <meshStandardMaterial 
-          color="#C0C0C0" 
+          color="hsl(var(--foreground))" 
           metalness={0.8} 
           roughness={0.2}
           transparent
@@ -127,7 +127,7 @@ const AviatorGlasses = () => {
       <mesh position={[0.15, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.082, 0.082, 0.008, 32]} />
         <meshStandardMaterial 
-          color="#C0C0C0" 
+          color="hsl(var(--foreground))" 
           metalness={0.8} 
           roughness={0.2}
           transparent
@@ -146,7 +146,7 @@ const WayfarerGlasses = () => {
       <mesh position={[-0.12, 0, 0]}>
         <boxGeometry args={[0.16, 0.12, 0.005]} />
         <meshStandardMaterial 
-          color="#2C2C2C" 
+          color="hsl(var(--muted-foreground))" 
           transparent 
           opacity={0.7}
         />
@@ -156,7 +156,7 @@ const WayfarerGlasses = () => {
       <mesh position={[0.12, 0, 0]}>
         <boxGeometry args={[0.16, 0.12, 0.005]} />
         <meshStandardMaterial 
-          color="#2C2C2C" 
+          color="hsl(var(--muted-foreground))" 
           transparent 
           opacity={0.7}
         />
@@ -165,14 +165,14 @@ const WayfarerGlasses = () => {
       {/* Bridge */}
       <mesh position={[0, 0.02, 0]}>
         <boxGeometry args={[0.04, 0.02, 0.008]} />
-        <meshStandardMaterial color="#1a1a1a" />
+        <meshStandardMaterial color="hsl(var(--foreground))" />
       </mesh>
       
       {/* Left frame */}
       <mesh position={[-0.12, 0, 0]}>
         <boxGeometry args={[0.18, 0.14, 0.01]} />
         <meshStandardMaterial 
-          color="#1a1a1a"
+          color="hsl(var(--foreground))"
           transparent
           opacity={0.9}
         />
@@ -182,7 +182,7 @@ const WayfarerGlasses = () => {
       <mesh position={[0.12, 0, 0]}>
         <boxGeometry args={[0.18, 0.14, 0.01]} />
         <meshStandardMaterial 
-          color="#1a1a1a"
+          color="hsl(var(--foreground))"
           transparent
           opacity={0.9}
         />
@@ -199,7 +199,7 @@ const RoundGlasses = () => {
       <mesh position={[-0.13, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.07, 0.07, 0.005, 32]} />
         <meshStandardMaterial 
-          color="#FFE4B5" 
+          color="hsl(var(--accent))" 
           transparent 
           opacity={0.4}
         />
@@ -209,7 +209,7 @@ const RoundGlasses = () => {
       <mesh position={[0.13, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.07, 0.07, 0.005, 32]} />
         <meshStandardMaterial 
-          color="#FFE4B5" 
+          color="hsl(var(--accent))" 
           transparent 
           opacity={0.4}
         />
@@ -218,14 +218,14 @@ const RoundGlasses = () => {
       {/* Bridge */}
       <mesh position={[0, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
         <cylinderGeometry args={[0.004, 0.004, 0.06]} />
-        <meshStandardMaterial color="#DAA520" metalness={0.7} roughness={0.3} />
+        <meshStandardMaterial color="hsl(var(--accent-foreground))" metalness={0.7} roughness={0.3} />
       </mesh>
       
       {/* Left frame */}
       <mesh position={[-0.13, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.072, 0.072, 0.008, 32]} />
         <meshStandardMaterial 
-          color="#DAA520" 
+          color="hsl(var(--accent-foreground))" 
           metalness={0.7} 
           roughness={0.3}
           transparent
@@ -237,7 +237,7 @@ const RoundGlasses = () => {
       <mesh position={[0.13, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.072, 0.072, 0.008, 32]} />
         <meshStandardMaterial 
-          color="#DAA520" 
+          color="hsl(var(--accent-foreground))" 
           metalness={0.7} 
           roughness={0.3}
           transparent
@@ -256,7 +256,7 @@ const CatEyeGlasses = () => {
       <mesh position={[-0.12, 0, 0]} rotation={[0, 0, 0.2]}>
         <boxGeometry args={[0.16, 0.1, 0.005]} />
         <meshStandardMaterial 
-          color="#FF69B4" 
+          color="hsl(var(--destructive))" 
           transparent 
           opacity={0.4}
         />
@@ -266,7 +266,7 @@ const CatEyeGlasses = () => {
       <mesh position={[0.12, 0, 0]} rotation={[0, 0, -0.2]}>
         <boxGeometry args={[0.16, 0.1, 0.005]} />
         <meshStandardMaterial 
-          color="#FF69B4" 
+          color="hsl(var(--destructive))" 
           transparent 
           opacity={0.4}
         />
@@ -275,14 +275,14 @@ const CatEyeGlasses = () => {
       {/* Bridge */}
       <mesh position={[0, 0.01, 0]}>
         <boxGeometry args={[0.03, 0.015, 0.008]} />
-        <meshStandardMaterial color="#FFB6C1" />
+        <meshStandardMaterial color="hsl(var(--destructive-foreground))" />
       </mesh>
       
       {/* Left frame */}
       <mesh position={[-0.12, 0, 0]} rotation={[0, 0, 0.2]}>
         <boxGeometry args={[0.18, 0.12, 0.01]} />
         <meshStandardMaterial 
-          color="#FFB6C1"
+          color="hsl(var(--destructive-foreground))"
           transparent
           opacity={0.9}
         />
@@ -292,7 +292,7 @@ const CatEyeGlasses = () => {
       <mesh position={[0.12, 0, 0]} rotation={[0, 0, -0.2]}>
         <boxGeometry args={[0.18, 0.12, 0.01]} />
         <meshStandardMaterial 
-          color="#FFB6C1"
+          color="hsl(var(--destructive-foreground))"
           transparent
           opacity={0.9}
         />

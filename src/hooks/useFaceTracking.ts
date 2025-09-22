@@ -17,9 +17,10 @@ export const useFaceTracking = (videoRef: React.RefObject<HTMLVideoElement>) => 
   const [performance, setPerformance] = useState({ fps: 0, processingTime: 0 });
   const faceMeshRef = useRef<FaceMesh | null>(null);
   const cameraRef = useRef<MediaPipeCamera | null>(null);
-  const lastProcessTime = useRef<number>(0);
-  const frameCount = useRef<number>(0);
-  const startTime = useRef<number>(Date.now());
+  const lastProcessStart = useRef<number>(0);
+  const fpsFrameCount = useRef<number>(0);
+  const fpsStartTime = useRef<number>(Date.now());
+  const lastSentTime = useRef<number>(0);
 
   useEffect(() => {
     if (!videoRef.current) return;
@@ -40,12 +41,12 @@ export const useFaceTracking = (videoRef: React.RefObject<HTMLVideoElement>) => 
 
     faceMesh.onResults((results) => {
       const currentTime = Date.now();
-      const processingTime = currentTime - lastProcessTime.current;
+      const processingTime = currentTime - lastProcessStart.current;
       
       // Update performance metrics
-      frameCount.current++;
-      const elapsed = (currentTime - startTime.current) / 1000;
-      const fps = frameCount.current / elapsed;
+      fpsFrameCount.current++;
+      const elapsed = (currentTime - fpsStartTime.current) / 1000;
+      const fps = fpsFrameCount.current / Math.max(elapsed, 0.001);
       
       setPerformance({ fps: Math.round(fps), processingTime });
       
@@ -78,8 +79,6 @@ export const useFaceTracking = (videoRef: React.RefObject<HTMLVideoElement>) => 
           setLandmarks(null);
         }
       }
-      
-      lastProcessTime.current = currentTime;
     });
 
     faceMeshRef.current = faceMesh;
@@ -87,12 +86,13 @@ export const useFaceTracking = (videoRef: React.RefObject<HTMLVideoElement>) => 
     // Initialize camera with optimized settings
     const camera = new MediaPipeCamera(videoRef.current, {
       onFrame: async () => {
-        // Throttle processing to improve performance (process every 3rd frame)
-        if (frameCount.current % 3 === 0 && videoRef.current && faceMeshRef.current) {
-          lastProcessTime.current = Date.now();
+        // Time-based throttle to ~15 FPS
+        const now = Date.now();
+        if (videoRef.current && faceMeshRef.current && (now - lastSentTime.current) >= 66) {
+          lastProcessStart.current = now;
           await faceMeshRef.current.send({ image: videoRef.current });
+          lastSentTime.current = now;
         }
-        frameCount.current++;
       },
       width: 640,  // Reduced resolution for better performance
       height: 480  // Reduced resolution for better performance

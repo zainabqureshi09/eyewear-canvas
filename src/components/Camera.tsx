@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import { Canvas } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
-import { FaceDetection } from "./FaceDetection";
+// import { FaceDetection } from "./FaceDetection"; // Removed to avoid duplicate Mediapipe processing
 import { GlassesModel } from "./GlassesModel";
 import { useFaceTracking } from "@/hooks/useFaceTracking";
 import { Badge } from "./ui/badge";
@@ -21,6 +21,7 @@ export const Camera = forwardRef<CameraRef, CameraProps>(({ selectedGlasses }, r
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cameraLoading, setCameraLoading] = useState(true);
+  const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null);
   
   const { landmarks, isDetecting, isLoading: faceTrackingLoading, performance } = useFaceTracking(videoRef);
 
@@ -44,6 +45,11 @@ export const Camera = forwardRef<CameraRef, CameraProps>(({ selectedGlasses }, r
       ctx.scale(-1, 1);
       ctx.drawImage(videoRef.current, -canvas.width, 0, canvas.width, canvas.height);
       ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+      // Draw the 3D overlay canvas on top if available
+      if (overlayCanvasRef.current) {
+        ctx.drawImage(overlayCanvasRef.current, 0, 0, canvas.width, canvas.height);
+      }
 
       return canvas.toDataURL('image/png');
     },
@@ -96,9 +102,6 @@ export const Camera = forwardRef<CameraRef, CameraProps>(({ selectedGlasses }, r
           }
         }}
       />
-
-      {/* Face Detection Overlay */}
-      <FaceDetection videoRef={videoRef} />
 
       {/* 3D Glasses Overlay */}
       <div className="absolute inset-0 pointer-events-none">

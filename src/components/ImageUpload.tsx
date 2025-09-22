@@ -20,6 +20,7 @@ export const ImageUpload = ({ selectedGlasses, onBack }: ImageUploadProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const { toast } = useToast();
   
   const { landmarks, isDetecting } = useImageFaceTracking(imageRef);
@@ -51,8 +52,8 @@ export const ImageUpload = ({ selectedGlasses, onBack }: ImageUploadProps) => {
     
     try {
       setIsProcessing(true);
-      const capturedImage = await captureFromImage(imageRef.current);
-      downloadImage(capturedImage, `glasses-tryona-${Date.now()}.png`);
+      const capturedImage = await captureFromImage(imageRef.current, overlayCanvasRef.current || undefined);
+      downloadImage(capturedImage, `glasses-tryon-${Date.now()}.png`);
     } catch (error) {
       toast({
         title: "Capture failed",
@@ -146,6 +147,9 @@ export const ImageUpload = ({ selectedGlasses, onBack }: ImageUploadProps) => {
                     left: 0,
                     width: '100%',
                     height: '100%',
+                  }}
+                  onCreated={({ gl }) => {
+                    overlayCanvasRef.current = (gl.domElement as HTMLCanvasElement) || null;
                   }}
                 >
                   <PerspectiveCamera makeDefault position={[0, 0, 1]} />
