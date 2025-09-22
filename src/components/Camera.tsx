@@ -20,9 +20,9 @@ export const Camera = forwardRef<CameraRef, CameraProps>(({ selectedGlasses }, r
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [cameraLoading, setCameraLoading] = useState(true);
   
-  const { landmarks, isDetecting } = useFaceTracking(videoRef);
+  const { landmarks, isDetecting, isLoading: faceTrackingLoading, performance } = useFaceTracking(videoRef);
 
   useImperativeHandle(ref, () => ({
     captureImage: async () => {
@@ -65,10 +65,10 @@ export const Camera = forwardRef<CameraRef, CameraProps>(({ selectedGlasses }, r
         if (videoRef.current) {
           videoRef.current.srcObject = mediaStream;
         }
-        setIsLoading(false);
+        setCameraLoading(false);
       } catch (err) {
         setError("Camera access denied. Please enable camera permissions.");
-        setIsLoading(false);
+        setCameraLoading(false);
       }
     };
 
@@ -103,65 +103,48 @@ export const Camera = forwardRef<CameraRef, CameraProps>(({ selectedGlasses }, r
       {/* 3D Glasses Overlay */}
       <div className="absolute inset-0 pointer-events-none">
         <Canvas
-          style={{ 
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            transform: 'scaleX(-1)' // Mirror to match video
+          camera={{ position: [0, 0, 1], fov: 50 }}
+          style={{ width: '100%', height: '100%' }}
+          gl={{ 
+            preserveDrawingBuffer: true,
+            antialias: false, // Disable for better performance
+            powerPreference: "high-performance"
           }}
         >
-          <PerspectiveCamera makeDefault position={[0, 0, 1]} />
-          <ambientLight intensity={0.6} />
-          <directionalLight position={[0, 0, 1]} intensity={0.8} />
+          <ambientLight intensity={0.8} />
+          <pointLight position={[10, 10, 10]} intensity={0.5} />
           
-          {landmarks && (
+          {landmarks && !faceTrackingLoading && (
             <GlassesModel 
+              landmarks={landmarks} 
               glassesType={selectedGlasses}
-              landmarks={landmarks}
             />
           )}
         </Canvas>
-      </div>
 
-      {/* Status Indicators */}
-      <div className="absolute top-4 right-4 flex flex-col gap-2">
-        {isLoading && (
-          <Badge variant="secondary" className="bg-tech-surface/80 backdrop-blur-sm">
-            <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse mr-2"></div>
-            Initializing...
-          </Badge>
-        )}
-        
-        {error && (
-          <Badge variant="destructive" className="bg-destructive/80 backdrop-blur-sm">
-            <AlertCircle className="w-3 h-3 mr-2" />
-            Camera Error
-          </Badge>
-        )}
-        
-        {!error && !isLoading && (
-          <Badge variant="secondary" className={`backdrop-blur-sm ${
-            isDetecting ? 'bg-tech-glow/20 border-tech-glow/40' : 'bg-tech-surface/80'
-          }`}>
-            {isDetecting ? (
-              <>
-                <CheckCircle className="w-3 h-3 mr-2 text-tech-glow" />
-                Face Detected
-              </>
-            ) : (
-              <>
-                <div className="w-2 h-2 bg-muted-foreground rounded-full mr-2"></div>
-                Looking for face...
-              </>
-            )}
-          </Badge>
-        )}
+        {/* Enhanced Detection Status Overlay */}
+        <div className="absolute top-4 left-4 flex items-center gap-2 bg-tech-surface/80 backdrop-blur-sm px-3 py-2 rounded-lg border border-tech-glow/20">
+          <div className={`w-2 h-2 rounded-full ${
+            faceTrackingLoading ? 'bg-yellow-500 animate-pulse' :
+            isDetecting ? 'bg-tech-glow animate-pulse' : 'bg-muted-foreground'
+          }`} />
+          <span className="text-sm text-foreground">
+            {faceTrackingLoading ? 'Initializing...' :
+             isDetecting ? 'Face Detected' : 'Looking for face...'}
+          </span>
+        </div>
+
+        {/* Performance Monitor */}
+        <div className="absolute top-4 right-4 bg-tech-surface/80 backdrop-blur-sm px-3 py-2 rounded-lg border border-tech-glow/20">
+          <div className="text-xs text-muted-foreground space-y-1">
+            <div>FPS: <span className="text-tech-glow">{performance.fps}</span></div>
+            <div>Latency: <span className="text-tech-glow">{performance.processingTime}ms</span></div>
+          </div>
+        </div>
       </div>
 
       {/* Loading Overlay */}
-      {isLoading && (
+      {cameraLoading && (
         <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
           <div className="text-center">
             <div className="w-12 h-12 border-2 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>

@@ -13,8 +13,13 @@ export interface FaceLandmarks {
 export const useFaceTracking = (videoRef: React.RefObject<HTMLVideoElement>) => {
   const [landmarks, setLandmarks] = useState<FaceLandmarks | null>(null);
   const [isDetecting, setIsDetecting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [performance, setPerformance] = useState({ fps: 0, processingTime: 0 });
   const faceMeshRef = useRef<FaceMesh | null>(null);
   const cameraRef = useRef<MediaPipeCamera | null>(null);
+  const lastProcessTime = useRef<number>(0);
+  const frameCount = useRef<number>(0);
+  const startTime = useRef<number>(Date.now());
 
   useEffect(() => {
     if (!videoRef.current) return;
@@ -25,26 +30,37 @@ export const useFaceTracking = (videoRef: React.RefObject<HTMLVideoElement>) => 
       }
     });
 
+    // Optimized settings for better performance
     faceMesh.setOptions({
       maxNumFaces: 1,
-      refineLandmarks: true,
-      minDetectionConfidence: 0.7,
-      minTrackingConfidence: 0.5
+      refineLandmarks: false, // Disable for better performance
+      minDetectionConfidence: 0.5, // Lower threshold for faster detection
+      minTrackingConfidence: 0.3  // Lower for smoother tracking
     });
 
     faceMesh.onResults((results) => {
+      const currentTime = Date.now();
+      const processingTime = currentTime - lastProcessTime.current;
+      
+      // Update performance metrics
+      frameCount.current++;
+      const elapsed = (currentTime - startTime.current) / 1000;
+      const fps = frameCount.current / elapsed;
+      
+      setPerformance({ fps: Math.round(fps), processingTime });
+      
       if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
         const faceLandmarks = results.multiFaceLandmarks[0];
         
-        // Extract key landmarks for glasses positioning
-        const leftEyeCenter = faceLandmarks[468]; // Left eye center
-        const rightEyeCenter = faceLandmarks[473]; // Right eye center
-        const noseTip = faceLandmarks[1]; // Nose tip
-        const forehead = faceLandmarks[10]; // Forehead center
+        // Extract key landmarks for glasses positioning (optimized indices)
+        const leftEyeCenter = faceLandmarks[468] || faceLandmarks[33]; // Fallback to outer corner
+        const rightEyeCenter = faceLandmarks[473] || faceLandmarks[263]; // Fallback to outer corner
+        const noseTip = faceLandmarks[1] || faceLandmarks[2]; // Fallback to nose bridge
+        const forehead = faceLandmarks[10] || faceLandmarks[151]; // Fallback
         
-        // Extract jawline points for face shape analysis
-        const jawlineIndices = [172, 136, 150, 149, 176, 148, 152, 377, 400, 378, 379, 365, 397, 288, 361, 323];
-        const jawline = jawlineIndices.map(index => faceLandmarks[index]);
+        // Simplified jawline for better performance (fewer points)
+        const jawlineIndices = [172, 136, 150, 176, 400, 378, 397, 288, 361, 323];
+        const jawline = jawlineIndices.map(index => faceLandmarks[index]).filter(Boolean);
 
         setLandmarks({
           leftEye: leftEyeCenter,
@@ -55,23 +71,31 @@ export const useFaceTracking = (videoRef: React.RefObject<HTMLVideoElement>) => 
         });
         
         setIsDetecting(true);
+        setIsLoading(false);
       } else {
         setIsDetecting(false);
-        setLandmarks(null);
+        if (!isLoading) {
+          setLandmarks(null);
+        }
       }
+      
+      lastProcessTime.current = currentTime;
     });
 
     faceMeshRef.current = faceMesh;
 
-    // Initialize camera
+    // Initialize camera with optimized settings
     const camera = new MediaPipeCamera(videoRef.current, {
       onFrame: async () => {
-        if (videoRef.current && faceMeshRef.current) {
+        // Throttle processing to improve performance (process every 3rd frame)
+        if (frameCount.current % 3 === 0 && videoRef.current && faceMeshRef.current) {
+          lastProcessTime.current = Date.now();
           await faceMeshRef.current.send({ image: videoRef.current });
         }
+        frameCount.current++;
       },
-      width: 1280,
-      height: 720
+      width: 640,  // Reduced resolution for better performance
+      height: 480  // Reduced resolution for better performance
     });
     
     cameraRef.current = camera;
@@ -90,6 +114,8 @@ export const useFaceTracking = (videoRef: React.RefObject<HTMLVideoElement>) => 
 
   return {
     landmarks,
-    isDetecting
+    isDetecting,
+    isLoading,
+    performance
   };
 };

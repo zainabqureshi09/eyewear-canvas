@@ -139,13 +139,13 @@ export const VirtualTryOn = () => {
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-4">
-              <span>Face Detection: {mode === 'camera' ? 'Active' : 'Photo Analysis'}</span>
+              <span>Face Detection: {mode === 'camera' ? 'Optimized Real-time' : 'AI Photo Analysis'}</span>
               <span>•</span>
-              <span>3D Rendering: Ready</span>
+              <span>3D Rendering: Hardware Accelerated</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 bg-tech-glow rounded-full animate-pulse"></span>
-              <span>{mode === 'camera' ? 'Real-time tracking enabled' : 'AI-powered face analysis'}</span>
+              <span>{mode === 'camera' ? 'High-performance tracking active' : 'Professional face analysis'}</span>
             </div>
           </div>
         </div>
