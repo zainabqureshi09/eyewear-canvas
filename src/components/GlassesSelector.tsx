@@ -2,6 +2,10 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Check } from "lucide-react";
+import aviatorGlasses from "@/assets/glasses-aviator.png";
+import wayfarGlasses from "@/assets/glasses-wayfare.png";
+import roundGlasses from "@/assets/glasses-round.png";
+import catEyeGlasses from "@/assets/glasses-cat-eye.png";
 
 interface GlassesSelectorProps {
   selectedGlasses: string;
@@ -15,7 +19,7 @@ const glassesOptions = [
     description: "Timeless pilot-style frames",
     color: "Silver",
     price: "$199",
-    preview: "🕶️"
+    image: aviatorGlasses
   },
   {
     id: "wayfare",
@@ -23,7 +27,7 @@ const glassesOptions = [
     description: "Iconic rectangular frames",
     color: "Black",
     price: "$249",
-    preview: "🤓"
+    image: wayfarGlasses
   },
   {
     id: "round",
@@ -31,7 +35,7 @@ const glassesOptions = [
     description: "Classic circular frames",
     color: "Gold",
     price: "$179",
-    preview: "👓"
+    image: roundGlasses
   },
   {
     id: "cat-eye",
@@ -39,7 +43,7 @@ const glassesOptions = [
     description: "Vintage feminine style",
     color: "Pink",
     price: "$229",
-    preview: "😎"
+    image: catEyeGlasses
   }
 ];
 
@@ -57,11 +61,15 @@ export const GlassesSelector = ({ selectedGlasses, onGlassesChange }: GlassesSel
           onClick={() => onGlassesChange(glasses.id)}
         >
           <div className="p-4">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div className="text-2xl w-10 h-10 flex items-center justify-center bg-tech-glass-overlay rounded-lg">
-                  {glasses.preview}
-                </div>
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 flex items-center justify-center bg-tech-glass-overlay rounded-lg p-2">
+                    <img 
+                      src={glasses.image} 
+                      alt={glasses.name}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-semibold text-foreground">{glasses.name}</h3>
